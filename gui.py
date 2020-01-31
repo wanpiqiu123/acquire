@@ -438,3 +438,46 @@ def display_box(screen, message,RECT):
     if len(message) != 0:
         screen.blit(fontobject.render(message, 1, (255,255,255)),(RECT[0]+2,RECT[1]+RECT[3]/3))
     pygame.display.flip()
+
+def draw_win_screen(DISPLAYSURF):
+    s2 = DISPLAYSURF.convert_alpha()
+    s2.fill((255,255,255,230))
+    pygame.draw.rect(s2,WHITE,WIN_FRAME)
+    pygame.draw.rect(s2,BLACK,WIN_FRAME,1)
+    note_txt_center = (WIN_FRAME[0]+WIN_FRAME[2]/2,WIN_FRAME[1]+WIN_FRAME[3]/12)
+    note_txt = C_FONT_20.render("游戏结束",True,BLACK)
+    note_txt_rect = note_txt.get_rect()
+    note_txt_rect.center = note_txt_center
+    s2.blit(note_txt,note_txt_rect)
+    rank_txt_center = (WIN_FRAME[0]+WIN_FRAME[2]/6,WIN_FRAME[1]+WIN_FRAME[3]/5)
+    rank_txt = C_FONT_15_B.render("排名",True,BLACK)
+    rank_txt_rect = rank_txt.get_rect()
+    rank_txt_rect.center = rank_txt_center
+    s2.blit(rank_txt,rank_txt_rect)
+    name_txt_center = (WIN_FRAME[0]+WIN_FRAME[2]/2,WIN_FRAME[1]+WIN_FRAME[3]/5)
+    name_txt = C_FONT_15_B.render("姓名",True,BLACK)
+    name_txt_rect = name_txt.get_rect()
+    name_txt_rect.center = name_txt_center
+    s2.blit(name_txt,name_txt_rect)
+    property_txt_center = (WIN_FRAME[0]+WIN_FRAME[2]*5/6,WIN_FRAME[1]+WIN_FRAME[3]/5)
+    property_txt = C_FONT_15_B.render("总资产",True,BLACK)
+    property_txt_rect = property_txt.get_rect()
+    property_txt_rect.center = property_txt_center
+    s2.blit(property_txt,property_txt_rect)
+    for i in range(variables.NUM_PLAYER):
+        rank_txt_center = (WIN_FRAME[0]+WIN_FRAME[2]/6,WIN_FRAME[1]+WIN_FRAME[3]*((i+1)/9+1/5))
+        rank_txt = C_FONT_15_B.render(str(i+1),True,RANK_COLOR[i])
+        rank_txt_rect = rank_txt.get_rect()
+        rank_txt_rect.center = rank_txt_center
+        s2.blit(rank_txt,rank_txt_rect)
+        name_txt_center = (WIN_FRAME[0]+WIN_FRAME[2]/2,WIN_FRAME[1]+WIN_FRAME[3]*((i+1)/9+1/5))
+        name_txt = C_FONT_15_B.render(str(variables.PLAYER_NAME[variables.FINAL_RANKING[i]]),True,RANK_COLOR[i])
+        name_txt_rect = name_txt.get_rect()
+        name_txt_rect.center = name_txt_center
+        s2.blit(name_txt,name_txt_rect)
+        property_txt_center = (WIN_FRAME[0]+WIN_FRAME[2]*5/6,WIN_FRAME[1]+WIN_FRAME[3]*((i+1)/9+1/5))
+        property_txt = C_FONT_15_B.render(str(variables.TOTAL_PROPERTY[variables.FINAL_RANKING[i]]),True,RANK_COLOR[i])
+        property_txt_rect = property_txt.get_rect()
+        property_txt_rect.center = property_txt_center
+        s2.blit(property_txt,property_txt_rect)
+    DISPLAYSURF.blit(s2,(0,0))

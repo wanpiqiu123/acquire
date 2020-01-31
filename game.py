@@ -15,11 +15,14 @@ def place_brick(idx):
 
 def take_brick():
     idx = variables.HAND_BRICK.index((0,0))
-    n_brick = random.choice(variables.REMAINING_BLOCK)
-    variables.HAND_BRICK[idx] = idx2coord(n_brick)
-    variables.REMAINING_BLOCK.remove(n_brick)
-    variables.REMAINING_BLOCK_NUM-=1
-    return n_brick
+    if variables.REMAINING_BLOCK_NUM==0:
+        return -1
+    else:
+        n_brick = random.choice(variables.REMAINING_BLOCK)
+        variables.HAND_BRICK[idx] = idx2coord(n_brick)
+        variables.REMAINING_BLOCK.remove(n_brick)
+        variables.REMAINING_BLOCK_NUM-=1
+        return n_brick
 
 def real_neibour(brick):
     assert 0<=brick<=107, "INVALID BRICK!"
@@ -171,17 +174,21 @@ def major_minor():
                             variables.MAJOR_MINOR[idx[j+1]][i]=1
 
 def end_turn():
-    variables.TURN=(variables.TURN+1)%variables.NUM_PLAYER
-    variables.BUY_STOCK_NUM=0
-    variables.place_flag = False
-    variables.brick_idx = None
-    variables.establish_flag = False
-    variables.acquire_flag = False
-    variables.buy_stock_flag = False
-    variables.has_put_flag = False
-    variables.has_buy_flag = False
-    variables.AC_LIST = [0,]*7
-    variables.MY_LOG+="\n轮到%s执行\n" %(variables.PLAYER_NAME[variables.TURN])
+    is_end = check_final()
+    if is_end==1:
+        variables.MY_LOG+="\n游戏结束！\n"
+    elif is_end==0:
+        variables.TURN=(variables.TURN+1)%variables.NUM_PLAYER
+        variables.BUY_STOCK_NUM=0
+        variables.place_flag = False
+        variables.brick_idx = None
+        variables.establish_flag = False
+        variables.acquire_flag = False
+        variables.buy_stock_flag = False
+        variables.has_put_flag = False
+        variables.has_buy_flag = False
+        variables.AC_LIST = [0,]*7
+        variables.MY_LOG+="\n轮到%s执行\n" %(variables.PLAYER_NAME[variables.TURN])
 
 def others_place_brick(brick_idx):
     brick_coord = idx2coord(brick_idx)
@@ -224,3 +231,49 @@ def others_buy_stock(buy_stock_list):
 def ohters_new_brick(brick_idx):
     variables.REMAINING_BLOCK.remove(brick_idx)
     variables.REMAINING_BLOCK_NUM-=1
+
+def calculate_property(): #money+share+stock
+    variables.TOTAL_PROPERTY=[0,]*variables.NUM_PLAYER
+    for i in range(variables.NUM_PLAYER):
+        variables.TOTAL_PROPERTY[i]+=variables.MONEY[i] #money
+        for j in range(7): #stock
+            variables.TOTAL_PROPERTY[i]+=variables.STOCK_AT_HAND[i][j]*variables.COMPANY_PRICE[j]
+    for k in range(7): #share
+        company_stock_list = [stock[k] for stock in variables.MAJOR_MINOR]
+        large_num = company_stock_list.count(2)
+        small_num = company_stock_list.count(1)
+        if small_num==0: #common major or only one major
+            share = 15*variables.COMPANY_PRICE[k]
+            for i in range(variables.NUM_PLAYER):
+                if variables.MAJOR_MINOR[i][k]==2:
+                    ma_share = share//100//large_num*100
+                    variables.TOTAL_PROPERTY[i]+=ma_share
+                    # variables.MY_LOG+="%s作为大股东获得分红%s\n" %(variables.PLAYER_NAME[i],ma_share)
+        else:
+            l_share = 10*variables.COMPANY_PRICE[k]
+            s_share = 5*variables.COMPANY_PRICE[k]
+            for i in range(variables.NUM_PLAYER):
+                if variables.MAJOR_MINOR[i][k]==2:
+                    ma_share = l_share//100//large_num*100
+                    variables.TOTAL_PROPERTY[i]+=ma_share
+                    # variables.MY_LOG+="%s作为大股东获得分红%s\n" %(variables.PLAYER_NAME[i],ma_share)
+                elif variables.MAJOR_MINOR[i][k]==1:
+                    mi_share = s_share//100//small_num*100
+                    variables.TOTAL_PROPERTY[i]+=mi_share
+                    # variables.MY_LOG+="%s作为二股东获得分红%s\n" %(variables.PLAYER_NAME[i],mi_share)
+    sorted_property = sorted(enumerate(variables.TOTAL_PROPERTY), key=lambda x: x[1],reverse=True)
+    variables.FINAL_RANKING = [i[0] for i in sorted_property]
+
+def check_final():
+    safe_cnt = 0
+    for i in range(len(COMPANY_NAME)):
+        if variables.COMPANY_SIZE[i]>=3: #max size
+            variables.win_flag = True
+            return 1
+        elif variables.COMPANY_SIZE[i]>=2: #safe
+            safe_cnt+=1
+    if safe_cnt==7: #all companies are safe
+        variables.win_flag = True
+        return 1
+    else:
+        return 0

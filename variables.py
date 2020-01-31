@@ -1,7 +1,7 @@
 NUM_PLAYER = 6
 PLAYER_NAME = ['Leo','Qu','John','Risky','player1','player2']
 COMPANY_SIZE = [0,]*7 #company size
-COMPANY_PRICE = [100,]*7 #stock price
+COMPANY_PRICE = [0,]*7 #stock price
 COMPANY_STOCK_NUM = [25,]*7 #how many stocks left
 LIVE_COMPANY = [0,]*7 #companys on the board
 MONEY = [6000,]*NUM_PLAYER
@@ -32,6 +32,8 @@ TMP_CHANGE = 0
 TMP_DECREASE = 0
 LARGE_COMPANY = 0
 SMALL_COMPANY = 0
+TOTAL_PROPERTY = []
+FINAL_RANKING = []
 
 place_flag = False
 brick_idx = None
@@ -44,3 +46,4 @@ has_buy_flag = False
 success_connection = False
 all_is_ready = False
 my_turn = False
+win_flag = False

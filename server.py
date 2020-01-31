@@ -4,7 +4,6 @@ from threading import Thread
 from protocol import *
 
 ADDRESS = ('127.0.0.1', 8712)  # 绑定地址
-# ADDRESS = ('127.0.0.1', 8712)  # 绑定地址
  
 g_socket_server = None  # 负责监听的socket
  
@@ -53,8 +52,8 @@ def message_handle(client):
         if not start_flag and len(name_list)==player_num:
             name_msg = send_name_list(name_list,sequence)
             start_flag = True
-            # brick_list = random.sample(range(108),player_num*6)
-            brick_list = list(range(12))
+            brick_list = random.sample(range(108),player_num*6)
+            # brick_list = list(range(12))
             for c in g_conn_pool:
                 c.sendall(name_msg)
                 c.sendall(original_handbrick(brick_list))

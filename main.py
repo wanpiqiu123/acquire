@@ -74,6 +74,7 @@ def message_handle(server):
                 variables.MY_LOG+="\n轮到%s执行\n" %(variables.PLAYER_NAME[variables.TURN])
                 if variables.TURN==variables.MY_ID:
                     variables.my_turn = True 
+                check_final()
             elif r[0]==9: #establish
                 company_id = r[1]
                 print("choose company %s" %(COMPANY_NAME[company_id]))
@@ -100,6 +101,7 @@ def message_handle(server):
 s = socket.socket() 
 
 screen = pygame.display.set_mode((320,240))
+pygame.display.set_caption('Client')
 connect_string = pygame.font.Font(None,18).render("connect", 1, (255,255,255))
 c_rect = connect_string.get_rect()
 c_rect.center = pygame.draw.rect(screen,(150,150,150),CONNECT_RECT).center
@@ -176,6 +178,8 @@ def main():
     variables.MONEY = [6000,]*variables.NUM_PLAYER
     variables.STOCK_AT_HAND = [[2,]*7 for i in range(variables.NUM_PLAYER)]
     variables.MAJOR_MINOR = [[0,]*7 for i in range(variables.NUM_PLAYER)]
+    variables.TOTAL_PROPERTY = [0,]*variables.NUM_PLAYER
+    variables.FINAL_RANKING = [0,]*variables.NUM_PLAYER
     while True:
         DISPLAYSURF.fill(BGCOLOR)
         draw_frame(DISPLAYSURF)
@@ -190,6 +194,10 @@ def main():
         draw_buy_menu(DISPLAYSURF)
         draw_rest_block(DISPLAYSURF)
         draw_log(DISPLAYSURF)
+
+        if variables.win_flag:
+            calculate_property()
+            draw_win_screen(DISPLAYSURF)
 
         for event in pygame.event.get(): # event handling loop
             if event.type == QUIT or (event.type == KEYUP and event.key == K_ESCAPE):
@@ -225,7 +233,7 @@ def main():
                         variables.MONEY[variables.TURN] = variables.MONEY[variables.TURN]-buy_cost(variables.BUY_STOCK_LIST)
                         variables.BUY_STOCK_NUM+=sum(variables.BUY_STOCK_LIST)
                         if variables.BUY_STOCK_NUM==0 and sum(variables.BUY_STOCK_LIST)==0:
-                            variables.MY_LOG+="%s没有购买股票" %(variables.PLAYER_NAME[variables.TURN])
+                            variables.MY_LOG+="%s没有购买股票\n" %(variables.PLAYER_NAME[variables.TURN])
                         else:
                             s.sendall(buy_stock_msg(variables.BUY_STOCK_LIST))
                             variables.MY_LOG+="%s购买了" %(variables.PLAYER_NAME[variables.TURN])
@@ -274,11 +282,14 @@ def main():
                         s.sendall(send_place_brick(variables.MY_ID,variables.brick_idx))
                     elif idx==6 and variables.has_put_flag:
                         if variables.BUY_STOCK_NUM==0 :
-                            variables.MY_LOG+="%s没有购买股票" %(variables.PLAYER_NAME[variables.TURN])
+                            variables.MY_LOG+="%s没有购买股票\n" %(variables.PLAYER_NAME[variables.TURN])
                             s.sendall(buy_stock_msg([0,]*7))
                         n_brick = take_brick()
-                        print("n_brick:",n_brick)
-                        s.sendall(new_brick(variables.MY_ID,n_brick))
+                        if n_brick==-1:
+                            variables.MY_LOG+="没有新的地块了\n"
+                        else:
+                            print("n_brick:",n_brick)
+                            s.sendall(new_brick(variables.MY_ID,n_brick))
                         end_turn()
                         s.sendall(send_end_turn(variables.MY_ID))
                         variables.my_turn=False
@@ -301,7 +312,7 @@ def main():
                 expand(variables.brick_idx)
             elif cnt==2: #acquire
                 c1,c2 = acquire_list(variables.brick_idx)
-                if variables.COMPANY_SIZE[c1]>=2 and variables.COMPANY_SIZE[c2]>=2: #safe company
+                if variables.COMPANY_SIZE[c1]>=3 and variables.COMPANY_SIZE[c2]>=3: #safe company
                     desert(variables.brick_idx)
                     variables.MY_LOG+="均为安全公司，废弃地块%s\n" %(idx2str(variables.brick_idx))
                 elif variables.COMPANY_SIZE[c1]==variables.COMPANY_SIZE[c2]:

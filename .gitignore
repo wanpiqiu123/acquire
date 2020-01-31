@@ -1,6 +1,9 @@
 protocol/.DS_Store
 *.pyc
-__pycache__/*.pyc
 settings.json
-*.pyc
-*.pyc
+.DS_Store
+client_example.py
+client.py
+inputbox.py
+server_example.py
+wenben.py
