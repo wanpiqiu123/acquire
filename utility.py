@@ -31,6 +31,7 @@ def draw_cut_txt(txt,full_rect,DISPLAYSURF,font,*piece):
         DISPLAYSURF.blit(PART_txt,(full_rect[0]+blank_width,full_rect[1]+full_rect[3]*i/block_num+blank_height))
 
 def idx2coord(idx):
+    assert 0<=idx<=108, "INDEX OUT OF RANGE!"
     x = (idx)%12+1
     y = (idx)//12+1
     return (x,y)
@@ -39,10 +40,14 @@ def coord2idx(x,y):
     idx = x+y*12-13
     return idx
 
-def buy_cost():
-    return sum([a*b for a,b in zip(variables.BUY_STOCK_LIST,variables.COMPANY_PRICE)])
+def idx2str(idx):
+    assert 0<=idx<=108, "INDEX OUT OF RANGE!"
+    x = (idx)%12+1
+    y = (idx)//12+1
+    return 'T'+str(10*x+y)
+
+def buy_cost(buy_stock_list):
+    return sum([a*b for a,b in zip(buy_stock_list,variables.COMPANY_PRICE)])
 
 def list_sum(l1,l2):
     return [a+b for a,b in zip(l1,l2)]
-
-

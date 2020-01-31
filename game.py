@@ -19,6 +19,7 @@ def take_brick():
     variables.HAND_BRICK[idx] = idx2coord(n_brick)
     variables.REMAINING_BLOCK.remove(n_brick)
     variables.REMAINING_BLOCK_NUM-=1
+    return n_brick
 
 def real_neibour(brick):
     assert 0<=brick<=107, "INVALID BRICK!"
@@ -50,17 +51,18 @@ def expand(brick):
     for i in neibour:
         if variables.BRICK_COLOR[i]==-2: #single brick
             single_brick.append(i)
-        elif variables.BRICK_COLOR[i]!=-1: #company
+        elif 0<=variables.BRICK_COLOR[i]<7: #company
             company_id = variables.BRICK_COLOR[i]
     for b in single_brick:
         variables.BRICK_COLOR[b]=company_id
     variables.COMPANY_SIZE[company_id]+=len(single_brick)
+    update_stock_price()
 
 def acquire_list(brick):
     neibour = real_neibour(brick)
     company_id_list = []
     for i in neibour:
-        if 0<=variables.BRICK_COLOR[i]<7: #company
+        if 0<=variables.BRICK_COLOR[i]<7 and variables.BRICK_COLOR[i] not in company_id_list: #company
             company_id_list.append(variables.BRICK_COLOR[i])
     return company_id_list
 
@@ -71,7 +73,7 @@ def acquire(brick,large_idx):
     for i in neibour:
         if variables.BRICK_COLOR[i]==-2: #single brick
             single_brick.append(i)
-        elif variables.BRICK_COLOR[i]!=-1 and variables.BRICK_COLOR[i]!=large_idx:
+        elif 0<=variables.BRICK_COLOR[i]<7 and variables.BRICK_COLOR[i]!=large_idx:
             small_company_id = variables.BRICK_COLOR[i]
     for b in single_brick:
         variables.BRICK_COLOR[b]=large_idx
@@ -104,7 +106,7 @@ def acquire(brick,large_idx):
                 variables.MY_LOG+="%s作为二股东获得分红%s\n" %(variables.PLAYER_NAME[i],mi_share)
     
 def desert(brick):
-    pass
+    variables.BRICK_COLOR[brick]=-3
 
 def establish(brick,selection):
     neibour = real_neibour(brick)
@@ -168,7 +170,6 @@ def major_minor():
                         for j in range(nums.count(minor_num)):
                             variables.MAJOR_MINOR[idx[j+1]][i]=1
 
-
 def end_turn():
     variables.TURN=(variables.TURN+1)%variables.NUM_PLAYER
     variables.BUY_STOCK_NUM=0
@@ -181,5 +182,45 @@ def end_turn():
     variables.has_buy_flag = False
     variables.AC_LIST = [0,]*7
     variables.MY_LOG+="\n轮到%s执行\n" %(variables.PLAYER_NAME[variables.TURN])
-    take_brick()
 
+def others_place_brick(brick_idx):
+    brick_coord = idx2coord(brick_idx)
+    brick_display = brick_coord[0]*10+brick_coord[1]
+    variables.BRICK_COLOR[brick_idx]=-2
+    variables.ON_BOARD_NUM += 1
+    variables.BLANK_BLOCK_NUM-=1
+    variables.MY_LOG+="%s放置了T%s\n" %(variables.PLAYER_NAME[variables.TURN],brick_display)
+    cnt = detect_connection(brick_idx)
+    if cnt==-1:
+        pass
+    elif cnt==0: #single
+        variables.MY_LOG+="等待%s选择建立的公司\n" %(variables.PLAYER_NAME[variables.TURN])
+    elif cnt==1: #expand
+        expand(brick_idx)
+    elif cnt==2: #acquire
+        c1,c2 = acquire_list(brick_idx)
+        if variables.COMPANY_SIZE[c1]>=2 and variables.COMPANY_SIZE[c2]>=2: #safe company
+            desert(brick_idx)
+            variables.MY_LOG+="均为安全公司，废弃地块%s\n" %(idx2str(brick_idx))
+        else:
+            variables.MY_LOG+="进行并购操作\n"
+    elif cnt==3: #desert
+        desert(brick_idx)
+        variables.MY_LOG+="废弃地块\n"
+        
+
+def others_buy_stock(buy_stock_list):
+    variables.MONEY[variables.TURN] -= buy_cost(buy_stock_list)
+    # variables.BUY_STOCK_NUM+=sum(variables.BUY_STOCK_LIST)
+    variables.MY_LOG+="%s购买了" %(variables.PLAYER_NAME[variables.TURN])
+    for i in range(len(buy_stock_list)):
+        variables.STOCK_AT_HAND[variables.TURN][i]+=buy_stock_list[i]
+        variables.COMPANY_STOCK_NUM[i]-=buy_stock_list[i]
+        if buy_stock_list[i]!=0:
+            variables.MY_LOG+="%s股%s, " %(buy_stock_list[i],COMPANY_NAME[i])
+    variables.MY_LOG+="\n"
+    major_minor()
+
+def ohters_new_brick(brick_idx):
+    variables.REMAINING_BLOCK.remove(brick_idx)
+    variables.REMAINING_BLOCK_NUM-=1

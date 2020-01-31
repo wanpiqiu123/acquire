@@ -1,0 +1,6 @@
+protocol/.DS_Store
+*.pyc
+__pycache__/*.pyc
+settings.json
+*.pyc
+*.pyc

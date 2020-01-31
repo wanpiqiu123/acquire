@@ -4,7 +4,7 @@ from utility import *
 import variables
 from constants import *
 
-pygame.init()
+pygame.font.init()
 C_FONT = pygame.font.Font("simsun.ttf",13)
 C_FONT_12 = pygame.font.Font("simsun.ttf",12)
 C_FONT_13 = pygame.font.Font("simsun.ttf",13)
@@ -40,7 +40,6 @@ def draw_frame(DISPLAYSURF):
         pygame.draw.rect(DISPLAYSURF,BLUE,ESC_BTN,1)
         pygame.draw.rect(DISPLAYSURF,PINK,RULE)
         pygame.draw.rect(DISPLAYSURF,GRAYWHITE,NOTE_MEMBER,1)
-        pygame.draw.rect(DISPLAYSURF,IVORY,BUY_MENU)
         pygame.draw.rect(DISPLAYSURF,GRAYWHITE,REST_BLOCK,1)
 
 
@@ -187,9 +186,11 @@ def draw_state(DISPLAYSURF):
 def draw_hand_brick(DISPLAYSURF,hand_brick_list):
     for i in range(6):
         n_rect = pygame.Rect(SQUARE1[0]+50*i,SQUARE1[1],SQUARE1[2],SQUARE1[3])
-        pygame.draw.rect(DISPLAYSURF,GRAYWHITE,n_rect)
+        color = GRAYWHITE if variables.my_turn else NEARWHITE
+        font_color = BLACK if variables.my_turn else GRAYWHITE
+        pygame.draw.rect(DISPLAYSURF,color,n_rect)
         if hand_brick_list[i]!=(0,0):
-            SQUARE_txt = E_FONT_14.render(brick2str(hand_brick_list[i]),True,BLACK)
+            SQUARE_txt = E_FONT_14.render(brick2str(hand_brick_list[i]),True,font_color)
             SQUARE_txt_rect = SQUARE_txt.get_rect()
             SQUARE_txt_rect.center = n_rect.center
             DISPLAYSURF.blit(SQUARE_txt,SQUARE_txt_rect)
@@ -202,10 +203,12 @@ def draw_c_name(DISPLAYSURF,turn):
     TURN_txt_rect.center = n_rect.center
     DISPLAYSURF.blit(TURN_txt,TURN_txt_rect)
 
-def draw_esc(DISPLAYSURF):
+def draw_end(DISPLAYSURF):
     n_rect = pygame.Rect(ESC_BTN)
-    pygame.draw.rect(DISPLAYSURF,LIGHTSKY,n_rect)
-    ESC_txt = C_FONT_15_B.render("结束回合",True,BLACK)
+    color = LIGHTSKY if variables.my_turn else NEARWHITE
+    font_color = BLACK if variables.my_turn else GRAYWHITE
+    pygame.draw.rect(DISPLAYSURF,color,n_rect)
+    ESC_txt = C_FONT_15_B.render("结束回合",True,font_color)
     ESC_txt_rect = ESC_txt.get_rect()
     ESC_txt_rect.center = n_rect.center
     DISPLAYSURF.blit(ESC_txt,ESC_txt_rect)
@@ -231,7 +234,10 @@ def draw_note(DISPLAYSURF):
     DISPLAYSURF.blit(SECOND_txt,second_rect)
 
 def draw_buy_menu(DISPLAYSURF):
-    BUY_txt = C_FONT_12.render("购买股票",True,BLACK)
+    color = IVORY if variables.my_turn else NEARWHITE
+    font_color = BLACK if variables.my_turn else GRAYWHITE
+    pygame.draw.rect(DISPLAYSURF,color,BUY_MENU)
+    BUY_txt = C_FONT_12.render("购买股票",True,font_color)
     n_rect = BUY_txt.get_rect()
     n_rect.center = pygame.Rect(BUY_MENU).center
     DISPLAYSURF.blit(BUY_txt,n_rect)
@@ -319,7 +325,7 @@ def select_stock(DISPLAYSURF):
     price_C_txt_rect.center = pygame.Rect(550,560,80,30).center
     s2.blit(price_C_txt,price_C_txt_rect)
     price_num = pygame.draw.rect(s2, GRAYWHITE, pygame.Rect(550,600,80,30))
-    price_num_txt = E_FONT_14_B.render(str(buy_cost()),True,BLACK)
+    price_num_txt = E_FONT_14_B.render(str(buy_cost(variables.BUY_STOCK_LIST)),True,BLACK)
     price_num_txt_rect = price_num_txt.get_rect()
     price_num_txt_rect.center = price_num.center
     s2.blit(price_num_txt,price_num_txt_rect)
@@ -329,7 +335,7 @@ def select_stock(DISPLAYSURF):
     money_C_txt_rect.center = pygame.Rect(650,560,80,30).center
     s2.blit(money_C_txt,money_C_txt_rect)
     money_num = pygame.draw.rect(s2, GRAYWHITE, pygame.Rect(650,600,80,30))
-    money_num_txt = E_FONT_14_B.render(str(variables.MONEY[variables.TURN]-buy_cost()),True,BLACK)
+    money_num_txt = E_FONT_14_B.render(str(variables.MONEY[variables.TURN]-buy_cost(variables.BUY_STOCK_LIST)),True,BLACK)
     money_num_txt_rect = money_num_txt.get_rect()
     money_num_txt_rect.center = money_num.center
     s2.blit(money_num_txt,money_num_txt_rect)
@@ -351,7 +357,7 @@ def deal_stock(DISPLAYSURF): #deal with stocks after acquire
     s2.fill((255,255,255,230))
     pygame.draw.rect(s2, GRAYWHITE, pygame.Rect(DEAL_STOCK_FRAME),2)
     note_txt_center = (DEAL_STOCK_FRAME[0]+DEAL_STOCK_FRAME[2]/2,DEAL_STOCK_FRAME[1]+DEAL_STOCK_FRAME[3]/7)
-    note_txt = C_FONT_20.render("您持有%s股%s，如何处理？"%(variables.STOCK_AT_HAND[variables.TURN][variables.SMALL_COMPANY],COMPANY_NAME[variables.SMALL_COMPANY]),True,BLACK)
+    note_txt = C_FONT_20.render("您持有%s股%s，如何处理？"%(variables.STOCK_AT_HAND[variables.MY_ID][variables.SMALL_COMPANY],COMPANY_NAME[variables.SMALL_COMPANY]),True,BLACK)
     note_txt_rect = note_txt.get_rect()
     note_txt_rect.center = note_txt_center
     s2.blit(note_txt,note_txt_rect)
@@ -387,7 +393,7 @@ def deal_stock(DISPLAYSURF): #deal with stocks after acquire
     money_txt_rect.center = pygame.Rect(350,460,40,30).center
     s2.blit(money_txt,money_txt_rect)
     money_num = pygame.draw.rect(s2, NEARWHITE, pygame.Rect(420,460,60,30))
-    money_num_txt = C_FONT_15_B.render(str(variables.MONEY[variables.TURN]+variables.COMPANY_PRICE[variables.SMALL_COMPANY]*variables.TMP_SELL),True,BLACK)
+    money_num_txt = C_FONT_15_B.render(str(variables.MONEY[variables.MY_ID]+variables.COMPANY_PRICE[variables.SMALL_COMPANY]*variables.TMP_SELL),True,BLACK)
     money_num_txt_rect = money_num_txt.get_rect()
     money_num_txt_rect.center = money_num.center
     s2.blit(money_num_txt,money_num_txt_rect)
@@ -397,7 +403,7 @@ def deal_stock(DISPLAYSURF): #deal with stocks after acquire
     old_stock_txt_rect.center = pygame.Rect(540,460,40,30).center
     s2.blit(old_stock_txt,old_stock_txt_rect)
     old_stock_num = pygame.draw.rect(s2, NEARWHITE, pygame.Rect(610,460,60,30))
-    old_stock_num_txt = C_FONT_15_B.render(str(variables.STOCK_AT_HAND[variables.TURN][variables.SMALL_COMPANY]-variables.TMP_DECREASE),True,BLACK)
+    old_stock_num_txt = C_FONT_15_B.render(str(variables.STOCK_AT_HAND[variables.MY_ID][variables.SMALL_COMPANY]-variables.TMP_DECREASE),True,BLACK)
     old_stock_num_txt_rect = old_stock_num_txt.get_rect()
     old_stock_num_txt_rect.center = old_stock_num.center
     s2.blit(old_stock_num_txt,old_stock_num_txt_rect)
@@ -407,7 +413,7 @@ def deal_stock(DISPLAYSURF): #deal with stocks after acquire
     new_stock_txt_rect.center = pygame.Rect(730,460,40,30).center
     s2.blit(new_stock_txt,new_stock_txt_rect)
     new_stock_num = pygame.draw.rect(s2, NEARWHITE, pygame.Rect(800,460,60,30))
-    new_stock_num_txt = C_FONT_15_B.render(str(variables.STOCK_AT_HAND[variables.TURN][variables.LARGE_COMPANY]+variables.TMP_CHANGE),True,BLACK)
+    new_stock_num_txt = C_FONT_15_B.render(str(variables.STOCK_AT_HAND[variables.MY_ID][variables.LARGE_COMPANY]+variables.TMP_CHANGE),True,BLACK)
     new_stock_num_txt_rect = new_stock_num_txt.get_rect()
     new_stock_num_txt_rect.center = new_stock_num.center
     s2.blit(new_stock_num_txt,new_stock_num_txt_rect)
@@ -423,3 +429,12 @@ def deal_stock(DISPLAYSURF): #deal with stocks after acquire
     s2.blit(reset_C_txt,reset_C_txt_rect)    
     
     DISPLAYSURF.blit(s2,(0,0))
+
+def display_box(screen, message,RECT):
+    # "Print a message in a box in the middle of the screen"
+    fontobject = pygame.font.Font(None,18)
+    pygame.draw.rect(screen, (0,0,0),RECT, 0)
+    pygame.draw.rect(screen, (255,255,255),RECT, 1)
+    if len(message) != 0:
+        screen.blit(fontobject.render(message, 1, (255,255,255)),(RECT[0]+2,RECT[1]+RECT[3]/3))
+    pygame.display.flip()

@@ -96,7 +96,7 @@ def deal_stock_msg(ID,small_id,large_id,sell,change):
     p.add_int32(change)
     return p.get_pck_has_head()
 
-def end_turn():
+def send_exit():
     p = Protocol()
     p.add_str("exit")
     return p.get_pck_has_head()
@@ -106,6 +106,14 @@ def get_id(id):
     p.add_str("id")
     p.add_int32(id)
     return p.get_pck_has_head()
+
+def send_name(ID,name):
+    p = Protocol()
+    p.add_str("name")
+    p.add_int32(ID)
+    p.add_str(name)
+    return p.get_pck_has_head()
+
 
 def pck_handler(pck):
     p = Protocol(pck)
@@ -134,5 +142,9 @@ def pck_handler(pck):
         player_id = p.get_int32()
         company_id = p.get_int32()
         return [3,player_id,company_id]
+    elif pck_type=="name":
+        ID = p.get_int32()
+        name = p.get_str()
+        return [4,ID,name]
     else:
-        return [-2,]
+        return [-3,]
