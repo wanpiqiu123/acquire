@@ -133,8 +133,8 @@ while flag:
                 flag=False
                 break
             elif c_idx==2 and not variables.success_connection: #connect
-                # s.connect((variables.ip, 8712))
-                s.connect(('127.0.0.1', 8712))
+                s.connect((variables.ip, 8712))
+                # s.connect(('127.0.0.1', 8712))
                 thread = Thread(target=message_handle,args=(s,))
                 thread.setDaemon(True)
                 thread.start()

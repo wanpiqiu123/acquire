@@ -3,8 +3,9 @@ import random
 from threading import Thread
 from protocol import *
 
-ADDRESS = ('127.0.0.1', 8712)  # 绑定地址
- 
+# ADDRESS = ('127.0.0.1', 8712)  # 绑定地址
+ADDRESS = ('192.168.2.100', 8712)  # 绑定地址
+
 g_socket_server = None  # 负责监听的socket
  
 g_conn_pool = []  # 连接池
